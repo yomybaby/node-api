@@ -8,7 +8,53 @@
 		<link rel="stylesheet" href="main.css">
 	</head>
 	<body>
-		Hello Backbone!!		
+		<div class="container">
+			<h1>Hello Backbone!!</h1>
+			<hr/>
+			
+			<div class="content">
+				내용
+			</div>	
+		</div>
+
+		<script type="text/template" id="list-template">
+			<a href="#new" class="btn btn-primary">새 맥주 입력</a>
+			<hr/>
+			<table class="table table-striped">
+				<tr>
+					<th>이름</th>
+					<th>가격</th>
+					<th>원산지</th>
+					<th>기타</th>
+				</tr>
+
+				<% _.each(items,function(beer){   %>
+				<tr>
+					<td> <%= beer.get('name') %></td>
+					<td> <%= beer.get('price') %></td>
+					<td> <%= beer.get('origin') %></td>
+					
+					<td></td>
+				</tr>
+				<% }); %>
+
+			</table>
+		</script>
+
+		<script>
+			<form role="form">
+				<label>이름</label>
+				<input class="form-control">
+
+				<label>가격</label>
+				<input class="form-control">
+
+				<label>생산지</label>
+				<input class="form-control">
+			</form>
+		</script>
+
+		
 		<script src="bower_components/jquery/dist/jquery.js"></script>
 		<script src="bower_components/underscore/underscore.js"></script>
 		<script src="bower_components/backbone/backbone.js"></script>
@@ -29,9 +75,52 @@
 		      });
 		      return o;
 		    };
-			
+
+
+		    var Beers = Backbone.Collection.extend({
+		    	url : '/api/beers'
+		    });
+		    var beers = new Beers();
+
+
+
+		    var ListView = Backbone.View.extend({
+		    	el : '.content',
+		    	render : function(){
+		    		var that = this;
+		    		
+		    		beers.fetch({
+		    			success:function(){
+				    		var templateText = _.template( $('#list-template').html(), {
+				    			items : beers.models
+				    		} );
+
+				    		that.$el.html(templateText);
+		    			}
+		    		});
+		    	}
+		    });
+		    var listView = new ListView();
 
 			
+			var Router = Backbone.Router.extend({
+				routes: {
+					"" : "home",
+					"new" : "edit"
+				}
+			});
+
+			var router = new Router();
+
+			router.on('route:home',function(){
+				listView.render();
+			});
+
+			router.on('route:edit',function(){
+				$('.content').html('새로운 맥주 입력창.');
+			});
+
+			Backbone.history.start();
 		</script>
 	</body>
 </html>
